@@ -1,8 +1,8 @@
 class Varlock < Formula
   desc "Add declarative schema to .env files using @env-spec decorator comments"
   homepage "https://varlock.dev"
-  url "https://registry.npmjs.org/varlock/-/varlock-0.9.1.tgz"
-  sha256 "8d353cb077149ea237b90cb6f83709d739d29b3e87d538abf371867eb970a682"
+  url "https://registry.npmjs.org/varlock/-/varlock-1.0.0.tgz"
+  sha256 "fa4320ae36b1afc750c9ab726263c03c569e6cca99fa59a1224bde6aa4e9241d"
   license "MIT"
 
   bottle do
@@ -14,6 +14,14 @@ class Varlock < Formula
   def install
     system "npm", "install", *std_npm_args
     bin.install_symlink libexec.glob("bin/*")
+
+    arch = Hardware::CPU.intel? ? "x64" : Hardware::CPU.arch.to_s
+    mac_bin = "VarlockEnclave.app/Contents/MacOS/varlock-local-encrypt"
+    libexec.glob("lib/node_modules/varlock/native-bins/*").each do |dir|
+      basename = dir.basename.to_s
+      rm_r(dir) if OS.linux? && basename != "linux-#{arch}"
+      deuniversalize_machos dir/mac_bin if OS.mac? && basename == "darwin"
+    end
   end
 
   test do
